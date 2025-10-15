@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Messaging</title>
+</head>
+<body>
+
+  <button id="subscribeBtn">Subscribe</button>
+<button id="UnsubscribeBtn">Unsubscribe</button>
+<button id="sendNotificationBtn">Send Notification</button>
+ <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-messaging.js";
+
+
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCDTjCyZXrh-UZlmRIyAkggFlXLX9ENTQI",
+  authDomain: "localhost-f2730.firebaseapp.com",
+  projectId: "localhost-f2730",
+  storageBucket: "localhost-f2730.firebasestorage.app",
+  messagingSenderId: "536657234345",
+  appId: "1:536657234345:web:dd23e56a18f8bc1d4c1cb8",
+  measurementId: "G-0TKQR2P41Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+// Show alert when message arrives in foreground
+onMessage(messaging, (payload) => {
+  console.log("📥 Foreground message received:", payload);
+
+  const { title, body } = payload.notification;
+
+  // Show browser notification (top-right on Windows, etc.)
+  if (Notification.permission === 'granted') {
+    new Notification(title, {
+      body: body,
+      icon: 'https://cat.10515.net/1.jpg'
+    });
+  } else {
+    alert(`${title}: ${body}`); // fallback
+  }
+});
+
+// Subscribe
+document.getElementById('subscribeBtn').addEventListener('click', async () => {
+  try {
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
+    const token = await getToken(messaging, {
+      vapidKey: "BOYQYtZcLSMhPYJayMtZja_USBnZbhUBBO6O5cTPY2gX2wNgx812A8sJZIR7oct3xIr8EI1pLAF1p4B1C6HaAvs",
+      serviceWorkerRegistration: registration
+    });
+
+    const userId = "user123"; // Replace with actual user id (or generate one)
+
+    const response = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, fcmToken: token })
+    });
+
+    const result = await response.text();
+    alert("✅ " + result);
+  } catch (err) {
+    console.error("❌ Subscription error:", err);
+    alert("❌ Subscription failed");
+  }
+});
+
+
+document.getElementById('UnsubscribeBtn').addEventListener('click', async () => {
+  try {
+    const userId = "user123"; // Make sure this matches the userId you used to subscribe
+
+    const response = await fetch('/api/unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+
+    const result = await response.text();
+    if (!response.ok) throw new Error(result);
+
+    alert("✅ " + result);
+  } catch (err) {
+    console.error("❌ Error unsubscribing:", err);
+    alert("❌ Failed to unsubscribe: " + err.message);
+  }
+});
+
+
+ document.getElementById('sendNotificationBtn').addEventListener('click', async () => {
+    try {
+      const title = "Hello!";
+      const body = "This is a test notification.";
+
+      const response = await fetch('/api/sendNotification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body })
+      });
+
+      const result = await response.text();
+
+      if (!response.ok) throw new Error(result);
+
+      alert("Notification sent!");
+    } catch (err) {
+      console.error("Error sending notification:", err);
+      alert("Failed to send notification");
+    }
+  });
+
+</script>
+
+
+
+</body>
+</html>
