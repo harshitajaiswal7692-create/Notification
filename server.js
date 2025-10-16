@@ -9,12 +9,18 @@ const app = express();
 const port = 3000;
 
 // Load Firebase Admin SDK
-
-const serviceAccount = require("./serviceAccountKey.json");
+require('dotenv').config(); // 👈 load .env variables
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+// const serviceAccount = require("./serviceAccountKey.json");
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
 const db = admin.firestore();
 
@@ -107,6 +113,8 @@ const sendNotificationToSubscribedUsers = async (title, body) => {
       console.log("📨 Sending to token:", message.token);  
       const response = await admin.messaging().send(message);
       console.log(`✅ Notification sent successfully. Response ID: ${response}`);
+      console.log("📨 FCM response:", response);
+
     } catch (error) {
       console.error('❌ Error sending notification:', error);
     }
