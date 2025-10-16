@@ -9,8 +9,9 @@ const app = express();
 const port = 3000;
 
 // Load Firebase Admin SDK
-const serviceAccount = require('./serviceAccountKey.json');
-console.log(serviceAccount);
+
+const serviceAccount = require("./serviceAccountKey.json");
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -89,7 +90,7 @@ const sendNotificationToSubscribedUsers = async (title, body) => {
         webpush: {
           notification: {
             icon: 'https://cat.10515.net/1.jpg',
-            click_action: 'http://localhost:3000/' 
+            click_action: 'https://notification-3-txmo.onrender.com/' 
           }
         }
       });
